@@ -8,9 +8,9 @@ import { dirname, resolve } from 'node:path'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const OUT = resolve(__dirname, '../public')
 
-const ROMI = '#CE8A99'
-const ALAN = '#7FA08E'
-const BG = '#FAF5F2'
+const ROMI = '#C7A3DD'
+const ALAN = '#9892D6'
+const BG = '#F7F5FB'
 
 const HEART =
   'M50 86.5 C 50 86.5, 13 62 13 36.2 C 13 22.6 23.4 14.5 34.2 14.5 ' +

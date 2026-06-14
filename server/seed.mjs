@@ -32,13 +32,13 @@ const people = [
   {
     email: process.env.ROMI_EMAIL,
     nombre: process.env.ROMI_NOMBRE || 'Romi',
-    color: process.env.ROMI_COLOR || '#CE8A99',
+    color: process.env.ROMI_COLOR || '#C7A3DD',
     password: process.env.ROMI_PASSWORD,
   },
   {
     email: process.env.ALAN_EMAIL,
     nombre: process.env.ALAN_NOMBRE || 'Alan',
-    color: process.env.ALAN_COLOR || '#7FA08E',
+    color: process.env.ALAN_COLOR || '#9892D6',
     password: process.env.ALAN_PASSWORD,
   },
 ]

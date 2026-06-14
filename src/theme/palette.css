@@ -4,30 +4,30 @@
    Formato: canales "R G B" (separados por espacio) para soportar opacidad
    en Tailwind (ej. bg-primary/10) sin perder el theming por variable.
 
-   Dirección: minimalista y serena. Fondo cálido muy claro, amor en rosa
-   empolvado, tranquilidad en verde salvia apagado, texto gris cálido profundo.
+   Dirección: minimalista y serena. Violeta clarito pastel (amor/tranquilidad)
+   sobre neutros fríos muy claros, con un salvia apagado de complemento.
    ════════════════════════════════════════════════════════════════════════ */
 
 :root {
   /* superficies */
-  --c-bg: 250 245 242;          /* #FAF5F2  fondo cálido casi blanco          */
-  --c-bg-elev: 245 238 232;     /* #F5EEE8  base del degradé de fondo         */
-  --c-surface: 255 253 252;     /* #FFFDFC  tarjetas                          */
-  --c-surface-2: 244 236 231;   /* #F4ECE7  inputs, chips, rellenos suaves    */
-  --c-border: 236 226 220;      /* #ECE2DC  hairlines cálidas                 */
+  --c-bg: 247 245 251;          /* #F7F5FB  fondo frío casi blanco            */
+  --c-bg-elev: 241 238 248;     /* #F1EEF8  base del degradé de fondo         */
+  --c-surface: 255 255 255;     /* #FFFFFF  tarjetas                          */
+  --c-surface-2: 242 239 249;   /* #F2EFF9  inputs, chips, rellenos suaves    */
+  --c-border: 233 229 242;      /* #E9E5F2  hairlines                         */
 
   /* texto */
-  --c-text: 59 53 49;           /* #3B3531  gris cálido profundo              */
-  --c-muted: 140 128 121;       /* #8C8079  secundario                        */
-  --c-soft: 180 168 159;        /* #B4A89F  terciario / placeholders          */
+  --c-text: 58 55 66;           /* #3A3742  gris carbón frío                  */
+  --c-muted: 131 126 142;       /* #837E8E  secundario                        */
+  --c-soft: 173 167 184;        /* #ADA7B8  terciario / placeholders          */
 
-  /* primario — AMOR (rosa empolvado / durazno) */
-  --c-primary: 198 132 151;     /* #C68497  brand rose (acentos, íconos)      */
-  --c-primary-strong: 168 95 121; /* #A85F79  botones llenos, links, énfasis  */
-  --c-primary-soft: 246 231 233; /* #F6E7E9  tinte de fondo rosa              */
+  /* primario — VIOLETA CLARITO PASTEL */
+  --c-primary: 173 150 214;     /* #AD96D6  violeta pastel (acentos, íconos)  */
+  --c-primary-strong: 124 99 176; /* #7C63B0  botones llenos, links, énfasis  */
+  --c-primary-soft: 240 235 250; /* #F0EBFA  tinte de fondo violeta           */
   --c-on-primary: 255 255 255;  /* texto sobre primario lleno                 */
 
-  /* acento — TRANQUILIDAD (verde salvia apagado) */
+  /* acento — complemento sereno (salvia apagado) */
   --c-accent: 136 165 149;      /* #88A595                                    */
   --c-accent-strong: 94 135 112; /* #5E8770                                   */
   --c-accent-soft: 230 237 231; /* #E6EDE7                                    */
@@ -40,28 +40,28 @@
   --c-danger: 192 106 92;       /* #C06A5C  acción destructiva                */
 
   /* colores de persona (defaults; perfiles.color los sobreescribe en runtime) */
-  --c-romi: 206 138 153;        /* #CE8A99  blush                             */
-  --c-alan: 127 160 142;        /* #7FA08E  salvia                            */
+  --c-romi: 199 163 221;        /* #C7A3DD  lila                              */
+  --c-alan: 152 146 214;        /* #9892D6  periwinkle                        */
 
   color-scheme: light;
 }
 
-/* ── Modo oscuro (cálido, no negro puro) — opcional, no bloqueante ───────── */
+/* ── Modo oscuro (frío, no negro puro) — opcional, no bloqueante ─────────── */
 [data-theme='dark'] {
-  --c-bg: 34 30 28;             /* #221E1C */
-  --c-bg-elev: 27 24 22;        /* #1B1816 */
-  --c-surface: 43 38 36;        /* #2B2624 */
-  --c-surface-2: 52 48 45;      /* #34302D */
-  --c-border: 61 56 53;         /* #3D3835 */
+  --c-bg: 32 30 38;             /* #201E26 */
+  --c-bg-elev: 26 24 32;        /* #1A1820 */
+  --c-surface: 42 39 51;        /* #2A2733 */
+  --c-surface-2: 51 47 62;      /* #332F3E */
+  --c-border: 60 56 72;         /* #3C3848 */
 
-  --c-text: 239 231 225;        /* #EFE7E1 */
-  --c-muted: 179 168 159;       /* #B3A89F */
-  --c-soft: 138 127 119;        /* #8A7F77 */
+  --c-text: 236 232 242;        /* #ECE8F2 */
+  --c-muted: 171 164 184;       /* #ABA4B8 */
+  --c-soft: 131 124 144;        /* #837C90 */
 
-  --c-primary: 217 159 173;     /* #D99FAD */
-  --c-primary-strong: 226 174 186; /* #E2AEBA */
-  --c-primary-soft: 58 44 48;   /* #3A2C30 */
-  --c-on-primary: 43 38 36;     /* texto oscuro sobre rosa claro */
+  --c-primary: 198 178 232;     /* #C6B2E8 */
+  --c-primary-strong: 211 194 240; /* #D3C2F0 */
+  --c-primary-soft: 52 44 68;   /* #342C44 */
+  --c-on-primary: 42 39 51;     /* texto oscuro sobre violeta claro */
 
   --c-accent: 157 187 169;      /* #9DBBA9 */
   --c-accent-strong: 176 203 187; /* #B0CBBB */
@@ -73,8 +73,8 @@
   --c-expense-soft: 53 42 39;
   --c-danger: 217 140 126;      /* #D98C7E */
 
-  --c-romi: 220 160 173;
-  --c-alan: 157 187 169;
+  --c-romi: 208 174 226;
+  --c-alan: 173 166 230;
 
   color-scheme: dark;
 }

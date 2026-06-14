@@ -122,16 +122,19 @@ export function mountApi(app) {
   app.post('/api/auth/login', async (req, res) => {
     try {
       const { email, id, password } = req.body || {}
-      if (!password || (!email && !id)) return res.status(400).json({ error: 'Faltan datos' })
-      let rows
+      // Entrar tocando "Soy X": sólo con id, sin contraseña.
       if (id) {
         if (!UUID.test(String(id))) return res.status(401).json({ error: 'No pudimos entrar' })
-        ;({ rows } = await query('select * from perfiles where id = $1', [id]))
-      } else {
-        ;({ rows } = await query('select * from perfiles where lower(email) = lower($1)', [
-          String(email).trim(),
-        ]))
+        const { rows } = await query('select * from perfiles where id = $1', [id])
+        const perfil = rows[0]
+        if (!perfil) return res.status(401).json({ error: 'No pudimos entrar' })
+        return res.json({ token: signToken(perfil), perfil: publicPerfil(perfil) })
       }
+      // Fallback por email + contraseña.
+      if (!email || !password) return res.status(400).json({ error: 'Faltan datos' })
+      const { rows } = await query('select * from perfiles where lower(email) = lower($1)', [
+        String(email).trim(),
+      ])
       const perfil = rows[0]
       const ok = perfil && (await verifyPassword(password, perfil.password_hash))
       if (!ok) return res.status(401).json({ error: 'Contraseña incorrecta' })

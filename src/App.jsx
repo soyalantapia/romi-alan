@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
 import Layout from './components/Layout'
 import Brand from './components/Brand'
+import ErrorBoundary from './components/ErrorBoundary'
 import Login from './screens/Login'
 import Inicio from './screens/Inicio'
 import Charlar from './screens/Charlar'
@@ -25,16 +26,18 @@ export default function App() {
   if (!user) return <Login />
 
   return (
-    <Routes>
-      <Route element={<Layout />}>
-        <Route path="/" element={<Inicio />} />
-        <Route path="/charlar" element={<Charlar />} />
-        <Route path="/compras" element={<Compras />} />
-        <Route path="/caja" element={<Caja />} />
-        <Route path="/planes" element={<Planes />} />
-        <Route path="/ajustes" element={<Ajustes />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Route>
-    </Routes>
+    <ErrorBoundary>
+      <Routes>
+        <Route element={<Layout />}>
+          <Route path="/" element={<Inicio />} />
+          <Route path="/charlar" element={<Charlar />} />
+          <Route path="/compras" element={<Compras />} />
+          <Route path="/caja" element={<Caja />} />
+          <Route path="/planes" element={<Planes />} />
+          <Route path="/ajustes" element={<Ajustes />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
+      </Routes>
+    </ErrorBoundary>
   )
 }

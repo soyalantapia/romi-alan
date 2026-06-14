@@ -13,7 +13,7 @@ import {
 } from '../lib/appearance'
 import { Toggle } from '../components/ui'
 
-const SWATCHES = ['#CE8A99', '#C68497', '#D8A07C', '#C9A26B', '#8FA98E', '#7FA08E', '#8AA8C4', '#A496C4']
+const SWATCHES = ['#C7A3DD', '#9892D6', '#B58FD6', '#8AA8C4', '#8FA98E', '#CE8A99', '#D8A07C', '#C9A26B']
 
 export default function Ajustes() {
   const { signOut } = useAuth()

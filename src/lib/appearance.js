@@ -3,10 +3,10 @@
 // tema (no se sobreescribe nada, así el modo oscuro mantiene su rosa claro).
 
 export const ACCENTS = {
-  rosa: { label: 'Rosa', dot: '#C68497' },
+  violeta: { label: 'Violeta', dot: '#AD96D6' }, // default = valores del tema
+  rosa: { label: 'Rosa', dot: '#C68497', primary: '198 132 151', strong: '168 95 121', soft: '246 231 233' },
   durazno: { label: 'Durazno', dot: '#E0A07C', primary: '224 160 124', strong: '198 122 90', soft: '250 235 226' },
   salvia: { label: 'Salvia', dot: '#88A595', primary: '136 165 149', strong: '92 130 109', soft: '230 237 231' },
-  lavanda: { label: 'Lavanda', dot: '#A496C4', primary: '164 150 196', strong: '124 108 168', soft: '237 232 247' },
   cielo: { label: 'Cielo', dot: '#8AA8C4', primary: '138 168 196', strong: '94 128 164', soft: '226 235 244' },
 }
 
@@ -35,7 +35,7 @@ export function applyAccent(name) {
 }
 
 export const getTheme = () => localStorage.getItem(KEY_THEME) || 'light'
-export const getAccent = () => localStorage.getItem(KEY_ACCENT) || 'rosa'
+export const getAccent = () => localStorage.getItem(KEY_ACCENT) || 'violeta'
 
 export function setTheme(theme) {
   localStorage.setItem(KEY_THEME, theme)
