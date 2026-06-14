@@ -42,8 +42,8 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
-  const signIn = async (email, password) => {
-    const { token, perfil } = await api.login(email.trim(), password)
+  const signIn = async (creds) => {
+    const { token, perfil } = await api.login(creds)
     setToken(token)
     setUser(perfil)
     startRealtime()

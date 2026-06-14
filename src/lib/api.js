@@ -29,7 +29,9 @@ async function request(path, { method = 'GET', body } = {}) {
 }
 
 export const api = {
-  login: (email, password) => request('/auth/login', { method: 'POST', body: { email, password } }),
+  // creds = { id, password } (selector "Soy Romi/Soy Alan") o { email, password }
+  login: (creds) => request('/auth/login', { method: 'POST', body: creds }),
+  quienes: () => request('/quienes'),
   me: () => request('/me'),
   perfiles: () => request('/perfiles'),
   updateProfile: (patch) => request('/perfiles/me', { method: 'PATCH', body: patch }),

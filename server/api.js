@@ -107,17 +107,34 @@ async function handleUpdate(table, id, patch, cfg) {
 }
 
 export function mountApi(app) {
-  // ── Auth ──
+  // ── ¿Quién sos? (público) — sólo nombre + color, para el selector del login ──
+  app.get('/api/quienes', async (_req, res) => {
+    try {
+      const { rows } = await query('select id, nombre, color from perfiles order by created_at')
+      res.json(rows)
+    } catch {
+      res.json([])
+    }
+  })
+
+  // ── Auth: login por persona (id) o por email ──
+  const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
   app.post('/api/auth/login', async (req, res) => {
     try {
-      const { email, password } = req.body || {}
-      if (!email || !password) return res.status(400).json({ error: 'Completá email y contraseña' })
-      const { rows } = await query('select * from perfiles where lower(email) = lower($1)', [
-        String(email).trim(),
-      ])
+      const { email, id, password } = req.body || {}
+      if (!password || (!email && !id)) return res.status(400).json({ error: 'Faltan datos' })
+      let rows
+      if (id) {
+        if (!UUID.test(String(id))) return res.status(401).json({ error: 'No pudimos entrar' })
+        ;({ rows } = await query('select * from perfiles where id = $1', [id]))
+      } else {
+        ;({ rows } = await query('select * from perfiles where lower(email) = lower($1)', [
+          String(email).trim(),
+        ]))
+      }
       const perfil = rows[0]
       const ok = perfil && (await verifyPassword(password, perfil.password_hash))
-      if (!ok) return res.status(401).json({ error: 'Email o contraseña incorrectos' })
+      if (!ok) return res.status(401).json({ error: 'Contraseña incorrecta' })
       res.json({ token: signToken(perfil), perfil: publicPerfil(perfil) })
     } catch (e) {
       res.status(500).json({ error: 'Error de servidor' })
