@@ -1,0 +1,40 @@
+{
+  "name": "romi-alan",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Romi & Alan — espacio compartido para una pareja que convive. Full-stack en Railway.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "vite",
+    "dev:server": "node --watch server/index.js",
+    "build": "vite build",
+    "start": "node server/index.js",
+    "preview": "vite preview",
+    "icons": "node scripts/gen-icons.mjs",
+    "setup:db": "node server/setup-db.mjs",
+    "seed": "node server/seed.mjs"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "autoprefixer": "^10.4.20",
+    "bcryptjs": "^2.4.3",
+    "compression": "^1.7.4",
+    "express": "^4.21.0",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.13.0",
+    "postcss": "^8.4.47",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.26.2",
+    "tailwindcss": "^3.4.13",
+    "vite": "^6.0.1",
+    "vite-plugin-pwa": "^0.21.1",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "sharp": "^0.33.5"
+  }
+}

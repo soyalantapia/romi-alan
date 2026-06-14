@@ -1,0 +1,151 @@
+@import './theme/palette.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --ease-gentle: cubic-bezier(0.22, 1, 0.36, 1);
+    --nav-h: 4.75rem;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-bg text-text font-sans antialiased;
+    min-height: 100svh;
+    /* fondo cálido sereno con una insinuación muy suave de los dos acentos */
+    background-color: rgb(var(--c-bg));
+    background-image:
+      radial-gradient(120% 80% at 15% -10%, rgb(var(--c-primary) / 0.08), transparent 55%),
+      radial-gradient(120% 80% at 100% 0%, rgb(var(--c-accent) / 0.07), transparent 50%);
+    background-attachment: fixed;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: rgb(var(--c-primary) / 0.22);
+    color: rgb(var(--c-text));
+  }
+
+  /* foco de teclado siempre visible (accesibilidad) */
+  :focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgb(var(--c-bg)), 0 0 0 5px rgb(var(--c-primary) / 0.55);
+    border-radius: 0.5rem;
+  }
+
+  input,
+  textarea,
+  button,
+  select {
+    font: inherit;
+    color: inherit;
+  }
+
+  /* numeros tabulares para montos y cuentas regresivas */
+  .nums {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum';
+  }
+
+  /* scrollbar discreta */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(var(--c-soft) / 0.5) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: rgb(var(--c-soft) / 0.45);
+    border-radius: 99px;
+  }
+
+  /* respetar quien prefiere menos movimiento */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-3xl bg-surface border border-border/70 shadow-soft;
+  }
+
+  .field-label {
+    @apply block text-sm font-medium text-muted mb-1.5;
+  }
+
+  .input {
+    @apply w-full rounded-2xl bg-surface-2 border border-border px-4 py-3 text-[0.975rem]
+           text-text placeholder:text-soft transition-colors duration-200
+           focus:bg-surface focus:border-primary/60;
+  }
+
+  textarea.input {
+    @apply leading-relaxed resize-none;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 font-semibold
+           transition-all duration-200 ease-gentle active:scale-[0.97] disabled:opacity-50
+           disabled:pointer-events-none select-none;
+  }
+  .btn-primary {
+    @apply btn bg-primary-strong text-on-primary shadow-soft-sm
+           hover:brightness-[1.04];
+  }
+  .btn-soft {
+    @apply btn bg-primary-soft text-primary-strong hover:bg-primary/20;
+  }
+  .btn-ghost {
+    @apply btn bg-transparent text-muted hover:bg-surface-2 hover:text-text;
+  }
+  .btn-danger {
+    @apply btn bg-transparent text-danger hover:bg-danger/10;
+  }
+
+  .icon-btn {
+    @apply inline-flex items-center justify-center rounded-full text-muted
+           transition-colors duration-200 hover:bg-surface-2 hover:text-text
+           active:scale-90;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-2xs font-semibold;
+  }
+
+  .seg {
+    @apply inline-flex items-center rounded-full bg-surface-2 p-1 border border-border/60;
+  }
+  .seg-item {
+    @apply rounded-full px-4 py-1.5 text-sm font-semibold text-muted transition-all
+           duration-200 ease-gentle;
+  }
+  .seg-item[data-active='true'] {
+    @apply bg-surface text-text shadow-soft-sm;
+  }
+
+  .skeleton {
+    @apply rounded-2xl bg-surface-2 animate-pulse;
+  }
+
+  /* truco para que el contenido no quede tapado por la bottom nav */
+  .page {
+    @apply mx-auto w-full max-w-screen-sm px-4 pt-5 animate-fade-up;
+    padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px) + 1.5rem);
+  }
+}

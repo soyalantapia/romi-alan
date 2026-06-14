@@ -1,0 +1,80 @@
+/* ════════════════════════════════════════════════════════════════════════
+   PALETA — ÚNICA FUENTE DE VERDAD DE COLOR
+   Para recolorar TODA la app, editá sólo este archivo.
+   Formato: canales "R G B" (separados por espacio) para soportar opacidad
+   en Tailwind (ej. bg-primary/10) sin perder el theming por variable.
+
+   Dirección: minimalista y serena. Fondo cálido muy claro, amor en rosa
+   empolvado, tranquilidad en verde salvia apagado, texto gris cálido profundo.
+   ════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* superficies */
+  --c-bg: 250 245 242;          /* #FAF5F2  fondo cálido casi blanco          */
+  --c-bg-elev: 245 238 232;     /* #F5EEE8  base del degradé de fondo         */
+  --c-surface: 255 253 252;     /* #FFFDFC  tarjetas                          */
+  --c-surface-2: 244 236 231;   /* #F4ECE7  inputs, chips, rellenos suaves    */
+  --c-border: 236 226 220;      /* #ECE2DC  hairlines cálidas                 */
+
+  /* texto */
+  --c-text: 59 53 49;           /* #3B3531  gris cálido profundo              */
+  --c-muted: 140 128 121;       /* #8C8079  secundario                        */
+  --c-soft: 180 168 159;        /* #B4A89F  terciario / placeholders          */
+
+  /* primario — AMOR (rosa empolvado / durazno) */
+  --c-primary: 198 132 151;     /* #C68497  brand rose (acentos, íconos)      */
+  --c-primary-strong: 168 95 121; /* #A85F79  botones llenos, links, énfasis  */
+  --c-primary-soft: 246 231 233; /* #F6E7E9  tinte de fondo rosa              */
+  --c-on-primary: 255 255 255;  /* texto sobre primario lleno                 */
+
+  /* acento — TRANQUILIDAD (verde salvia apagado) */
+  --c-accent: 136 165 149;      /* #88A595                                    */
+  --c-accent-strong: 94 135 112; /* #5E8770                                   */
+  --c-accent-soft: 230 237 231; /* #E6EDE7                                    */
+
+  /* Caja: entra / sale plata — calmos, no estridentes */
+  --c-income: 94 139 114;       /* #5E8B72  aporte (+)                        */
+  --c-income-soft: 229 239 232; /* #E5EFE8                                    */
+  --c-expense: 192 127 112;     /* #C07F70  gasto (−) arcilla apagada         */
+  --c-expense-soft: 246 231 225;/* #F6E7E1                                    */
+  --c-danger: 192 106 92;       /* #C06A5C  acción destructiva                */
+
+  /* colores de persona (defaults; perfiles.color los sobreescribe en runtime) */
+  --c-romi: 206 138 153;        /* #CE8A99  blush                             */
+  --c-alan: 127 160 142;        /* #7FA08E  salvia                            */
+
+  color-scheme: light;
+}
+
+/* ── Modo oscuro (cálido, no negro puro) — opcional, no bloqueante ───────── */
+[data-theme='dark'] {
+  --c-bg: 34 30 28;             /* #221E1C */
+  --c-bg-elev: 27 24 22;        /* #1B1816 */
+  --c-surface: 43 38 36;        /* #2B2624 */
+  --c-surface-2: 52 48 45;      /* #34302D */
+  --c-border: 61 56 53;         /* #3D3835 */
+
+  --c-text: 239 231 225;        /* #EFE7E1 */
+  --c-muted: 179 168 159;       /* #B3A89F */
+  --c-soft: 138 127 119;        /* #8A7F77 */
+
+  --c-primary: 217 159 173;     /* #D99FAD */
+  --c-primary-strong: 226 174 186; /* #E2AEBA */
+  --c-primary-soft: 58 44 48;   /* #3A2C30 */
+  --c-on-primary: 43 38 36;     /* texto oscuro sobre rosa claro */
+
+  --c-accent: 157 187 169;      /* #9DBBA9 */
+  --c-accent-strong: 176 203 187; /* #B0CBBB */
+  --c-accent-soft: 42 51 46;    /* #2A332E */
+
+  --c-income: 136 187 160;      /* #88BBA0 */
+  --c-income-soft: 38 48 43;
+  --c-expense: 214 158 144;     /* #D69E90 */
+  --c-expense-soft: 53 42 39;
+  --c-danger: 217 140 126;      /* #D98C7E */
+
+  --c-romi: 220 160 173;
+  --c-alan: 157 187 169;
+
+  color-scheme: dark;
+}
