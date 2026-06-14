@@ -77,9 +77,9 @@ export function useRealtimeTable(table) {
 
   const update = useCallback(
     async (id, patch) => {
-      let previous
+      let prevRow
       setRows((prev) => {
-        previous = prev
+        prevRow = prev.find((r) => r.id === id)
         return prev.map((r) => (r.id === id ? { ...r, ...patch } : r))
       })
       try {
@@ -87,7 +87,8 @@ export function useRealtimeTable(table) {
         setRows((prev) => upsert(prev, row))
         return { data: row }
       } catch (e) {
-        if (previous) setRows(previous)
+        // rollback sólo de la fila afectada (no pisar echos de realtime en vuelo)
+        if (prevRow) setRows((prev) => prev.map((r) => (r.id === id ? prevRow : r)))
         setError(e)
         return { error: e }
       }
@@ -97,16 +98,17 @@ export function useRealtimeTable(table) {
 
   const remove = useCallback(
     async (id) => {
-      let previous
+      let removed
       setRows((prev) => {
-        previous = prev
+        removed = prev.find((r) => r.id === id)
         return prev.filter((r) => r.id !== id)
       })
       try {
         await api.remove(table, id)
         return {}
       } catch (e) {
-        if (previous) setRows(previous)
+        // reinsertar sólo la fila borrada (no pisar echos de realtime en vuelo)
+        if (removed) setRows((prev) => upsert(prev, removed))
         setError(e)
         return { error: e }
       }

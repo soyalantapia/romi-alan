@@ -1,6 +1,12 @@
 import pg from 'pg'
 
 const { Pool } = pg
+
+// Las columnas `date` (sin hora) deben viajar como string crudo 'YYYY-MM-DD'.
+// Si no, pg las convierte a un Date a medianoche LOCAL del server y, al
+// serializar a ISO (UTC) y formatear en Buenos Aires, la fecha se corre un día.
+pg.types.setTypeParser(1082, (v) => v)
+
 const connectionString = process.env.DATABASE_URL
 
 if (!connectionString) {
