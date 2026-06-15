@@ -9,6 +9,7 @@ import Charlar from './screens/Charlar'
 import Casa from './screens/Casa'
 import Planes from './screens/Planes'
 import Nosotros from './screens/Nosotros'
+import Preguntas from './screens/Preguntas'
 import Ajustes from './screens/Ajustes'
 
 function FullScreenLoader() {
@@ -34,6 +35,7 @@ export default function App() {
           <Route path="/casa" element={<Casa />} />
           <Route path="/planes" element={<Planes />} />
           <Route path="/nosotros" element={<Nosotros />} />
+          <Route path="/preguntas" element={<Preguntas />} />
           <Route path="/ajustes" element={<Ajustes />} />
           {/* compras/caja viejas → ahora viven en Casa */}
           <Route path="/compras" element={<Navigate to="/casa" replace />} />

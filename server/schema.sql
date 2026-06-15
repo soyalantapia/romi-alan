@@ -166,11 +166,13 @@ create table if not exists preguntas (
   salteada_por uuid references perfiles(id),
   created_at   timestamptz not null default now()
 );
+-- Juego presencial: no se escribe la respuesta, sólo se marca si cada uno
+-- respondió (estaba preparado) o no.
 create table if not exists respuestas (
   id             uuid primary key default gen_random_uuid(),
   pregunta_id    uuid not null references preguntas(id) on delete cascade,
   respondido_por uuid not null references perfiles(id),
-  texto          text not null,
+  respondio      boolean not null default true,
   created_at     timestamptz not null default now(),
   unique (pregunta_id, respondido_por)
 );

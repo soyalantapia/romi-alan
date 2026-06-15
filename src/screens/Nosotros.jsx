@@ -4,7 +4,6 @@ import Heart from '../components/Heart'
 import { Segmented } from '../components/ui'
 import Pulso from '../components/Pulso'
 import Encuentro from '../components/Encuentro'
-import Preguntas from '../components/Preguntas'
 import Fotos from '../components/Fotos'
 
 // "Nosotros" reúne el vínculo (pulso + encuentro), las preguntas y las fotos.
@@ -27,7 +26,6 @@ export default function Nosotros() {
           onChange={setTab}
           options={[
             { value: 'vinculo', label: 'Conexión' },
-            { value: 'preguntas', label: 'Preguntas' },
             { value: 'fotos', label: 'Fotos' },
           ]}
         />
@@ -38,8 +36,6 @@ export default function Nosotros() {
           <Pulso />
           <Encuentro />
         </div>
-      ) : tab === 'preguntas' ? (
-        <Preguntas />
       ) : (
         <Fotos />
       )}

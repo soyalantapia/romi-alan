@@ -30,12 +30,8 @@ export function useJuego() {
     }
   }, [reload])
 
-  const responder = async (id, texto) => {
-    await api.responder(id, texto)
-    reload()
-  }
-  const saltear = async (id) => {
-    await api.saltear(id)
+  const marcar = async (id, persona, respondio) => {
+    await api.marcar(id, persona, respondio)
     reload()
   }
   const siguiente = async () => {
@@ -47,5 +43,5 @@ export function useJuego() {
     reload()
   }
 
-  return { data, loading, reload, responder, saltear, siguiente, reactivar }
+  return { data, loading, reload, marcar, siguiente, reactivar }
 }

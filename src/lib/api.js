@@ -47,8 +47,7 @@ export const api = {
   fotoUrl: (id) => `/api/fotos/${id}/raw?token=${encodeURIComponent(getToken() || '')}`,
   // ── Juego de preguntas ──
   getJuego: () => request('/juego'),
-  responder: (id, texto) => request(`/preguntas/${id}/responder`, { method: 'POST', body: { texto } }),
-  saltear: (id) => request(`/preguntas/${id}/saltear`, { method: 'POST' }),
+  marcar: (id, persona, respondio) => request(`/preguntas/${id}/marcar`, { method: 'POST', body: { persona, respondio } }),
   reactivar: (id) => request(`/preguntas/${id}/reactivar`, { method: 'POST' }),
   siguiente: () => request('/juego/siguiente', { method: 'POST' }),
 }
