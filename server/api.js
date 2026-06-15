@@ -1,4 +1,4 @@
-import { query } from './db.js'
+import { query, pool } from './db.js'
 import { requireAuth, verifyToken, verifyPassword, signToken } from './auth.js'
 import { broadcast } from './realtime.js'
 
@@ -30,18 +30,18 @@ const TABLES = {
   // ── Addendum ──
   puntos_trabajar: {
     author: 'creado_por',
-    insert: ['texto', 'tipo', 'estado'],
+    insert: ['encuentro_id', 'texto', 'tipo', 'estado'],
     update: ['texto', 'tipo', 'estado'],
   },
   momentos: {
     author: 'creado_por',
-    insert: ['texto', 'tipo'],
+    insert: ['encuentro_id', 'texto', 'tipo'],
     update: ['texto', 'tipo'],
   },
   encuentros: {
     author: null, // encuentro compartido, sin autor
-    insert: ['fecha', 'acuerdos', 'realizado'],
-    update: ['fecha', 'acuerdos', 'realizado'],
+    insert: ['fecha', 'titulo', 'acuerdos', 'estado'],
+    update: ['fecha', 'titulo', 'acuerdos', 'estado'],
   },
   pulso: {
     author: 'registrado_por',
@@ -144,6 +144,9 @@ async function handleUpdate(table, id, patch, cfg) {
   }
   if (table === 'metas' && 'estado' in patch) {
     raw.push(`lograda_at = ${patch.estado === 'lograda' ? 'now()' : 'null'}`)
+  }
+  if (table === 'encuentros' && 'estado' in patch) {
+    raw.push(`cerrado_at = ${patch.estado === 'cerrado' ? 'now()' : 'null'}`)
   }
   if (!cols.length && !raw.length) return null
   const setParam = cols.map((c, i) => `${c} = $${i + 1}`)
@@ -319,6 +322,34 @@ export function mountApi(app) {
     if (!rows[0]) return res.status(404).json({ error: 'Meta no encontrada' })
     broadcast({ table: 'metas', type: 'UPDATE', row: rows[0] })
     res.json(rows[0])
+  })
+
+  // ── Encuentro: cargar uno nuevo (cierra el abierto y abre uno fresco) ──
+  // Atómico (transacción) + invariante de "a lo sumo uno abierto" (índice único
+  // parcial). Si dos personas lo tocan a la vez, el perdedor recibe el abierto vigente.
+  app.post('/api/encuentro/nuevo', requireAuth, async (req, res) => {
+    const titulo = req.body?.titulo || null
+    const client = await pool.connect()
+    try {
+      await client.query('begin')
+      const cerrados = await client.query(
+        "update encuentros set estado = 'cerrado', cerrado_at = now() where estado = 'abierto' returning *"
+      )
+      const nuevo = await client.query("insert into encuentros (estado, titulo) values ('abierto', $1) returning *", [titulo])
+      await client.query('commit')
+      // broadcasts recién después del commit (nunca un cierre sin su apertura)
+      for (const r of cerrados.rows) broadcast({ table: 'encuentros', type: 'UPDATE', row: r })
+      broadcast({ table: 'encuentros', type: 'INSERT', row: nuevo.rows[0] })
+      res.status(201).json(nuevo.rows[0])
+    } catch {
+      await client.query('rollback').catch(() => {})
+      // carrera: ya hay uno abierto → devolvemos ese
+      const cur = await query("select * from encuentros where estado = 'abierto' order by created_at desc limit 1")
+      if (cur.rows[0]) return res.json(cur.rows[0])
+      res.status(500).json({ error: 'No se pudo cargar el encuentro' })
+    } finally {
+      client.release()
+    }
   })
 
   // ── Juego de preguntas (presencial: se marca Respondí / No respondí) ──

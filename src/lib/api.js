@@ -50,4 +50,6 @@ export const api = {
   marcar: (id, persona, respondio) => request(`/preguntas/${id}/marcar`, { method: 'POST', body: { persona, respondio } }),
   reactivar: (id) => request(`/preguntas/${id}/reactivar`, { method: 'POST' }),
   siguiente: () => request('/juego/siguiente', { method: 'POST' }),
+  // ── Encuentro ──
+  nuevoEncuentro: (titulo) => request('/encuentro/nuevo', { method: 'POST', body: { titulo } }),
 }

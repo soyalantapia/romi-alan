@@ -80,33 +80,39 @@ create index if not exists idx_planes_fecha on planes(fecha);
 --  ADDENDUM — Nosotros (encuentro, pulso, fotos), metas, config, hitos
 -- ════════════════════════════════════════════════════════════════════════
 
--- Encuentro semanal: puntos para trabajar (en primera persona)
-create table if not exists puntos_trabajar (
-  id         uuid primary key default gen_random_uuid(),
-  texto      text not null,
-  tipo       text not null default 'propio' check (tipo in ('propio','necesidad')),
-  estado     text not null default 'activo' check (estado in ('activo','logrado')),
-  creado_por uuid not null references perfiles(id),
-  created_at timestamptz not null default now(),
-  logrado_at timestamptz
-);
-
--- Lo bueno de la semana: momentos + agradecimientos
-create table if not exists momentos (
-  id         uuid primary key default gen_random_uuid(),
-  texto      text not null,
-  tipo       text not null default 'momento' check (tipo in ('momento','agradecimiento')),
-  creado_por uuid not null references perfiles(id),
-  created_at timestamptz not null default now()
-);
-
--- Los encuentros realizados (compartidos, sin autor)
+-- Encuentro semanal por sesiones: cada encuentro acumula su lo-bueno + puntos +
+-- acuerdos. estado 'abierto' = el de esta semana en curso; 'cerrado' = pasado.
 create table if not exists encuentros (
   id         uuid primary key default gen_random_uuid(),
   fecha      date not null default current_date,
+  titulo     text,
   acuerdos   text,
+  estado     text not null default 'cerrado' check (estado in ('abierto','cerrado')),
   realizado  boolean not null default false,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  cerrado_at timestamptz
+);
+
+-- Puntos para trabajar (en primera persona), atados a un encuentro
+create table if not exists puntos_trabajar (
+  id           uuid primary key default gen_random_uuid(),
+  encuentro_id uuid references encuentros(id) on delete cascade,
+  texto        text not null,
+  tipo         text not null default 'propio' check (tipo in ('propio','necesidad')),
+  estado       text not null default 'activo' check (estado in ('activo','logrado')),
+  creado_por   uuid not null references perfiles(id),
+  created_at   timestamptz not null default now(),
+  logrado_at   timestamptz
+);
+
+-- Lo bueno de la semana: momentos + agradecimientos, atados a un encuentro
+create table if not exists momentos (
+  id           uuid primary key default gen_random_uuid(),
+  encuentro_id uuid references encuentros(id) on delete cascade,
+  texto        text not null,
+  tipo         text not null default 'momento' check (tipo in ('momento','agradecimiento')),
+  creado_por   uuid not null references perfiles(id),
+  created_at   timestamptz not null default now()
 );
 
 -- Pulso de la relación (cada fila = una marca de una persona sobre un pilar)
@@ -156,6 +162,8 @@ insert into config (clave, valor) values ('encuentro_dia', '0')   -- 0 = domingo
 create index if not exists idx_puntos_estado on puntos_trabajar(estado);
 create index if not exists idx_pulso_created on pulso(created_at);
 create index if not exists idx_fotos_created on fotos(created_at);
+-- A lo sumo UN encuentro 'abierto' a la vez (invariante de la sesión semanal).
+create unique index if not exists uniq_encuentro_abierto on encuentros (estado) where estado = 'abierto';
 
 -- ── Juego de preguntas ──
 create table if not exists preguntas (

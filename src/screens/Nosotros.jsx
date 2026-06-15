@@ -1,9 +1,10 @@
 import { useNavigate } from 'react-router-dom'
 import Heart from '../components/Heart'
-import { IconHandHeart, IconFoto, IconSparkle, IconChevronRight } from '../components/icons'
+import { IconHandHeart, IconCalendar, IconFoto, IconSparkle, IconChevronRight } from '../components/icons'
 
 const SECCIONES = [
-  { to: '/conexion', Icon: IconHandHeart, title: 'Conexión', desc: 'El pulso de la relación y el encuentro semanal.' },
+  { to: '/conexion', Icon: IconHandHeart, title: 'Conexión', desc: 'El pulso de la relación, sin alarmas.' },
+  { to: '/encuentro', Icon: IconCalendar, title: 'Encuentro', desc: 'Su ratito de la semana, guardado.' },
   { to: '/fotos', Icon: IconFoto, title: 'Fotos', desc: 'Nuestra galería compartida.' },
   { to: '/preguntas', Icon: IconSparkle, title: 'Preguntas', desc: 'Un juego para conocerse más, por turnos.' },
 ]

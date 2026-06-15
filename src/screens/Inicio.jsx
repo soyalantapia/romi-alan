@@ -37,6 +37,7 @@ export default function Inicio() {
   const compras = useRealtimeTable('compras')
   const planes = useRealtimeTable('planes')
   const fotos = useRealtimeTable('fotos')
+  const encuentros = useRealtimeTable('encuentros')
 
   const temasPend = useMemo(() => temas.rows.filter((t) => t.estado === 'pendiente').length, [temas.rows])
   const comprasPend = useMemo(() => compras.rows.filter((c) => !c.comprado).length, [compras.rows])
@@ -52,6 +53,17 @@ export default function Inicio() {
   const [yy, mm, dd] = todayISO().split('-').map(Number)
   const dow = new Date(Date.UTC(yy, mm - 1, dd)).getUTCDay()
   const diasEnc = (Number(get('encuentro_dia', '0')) - dow + 7) % 7
+
+  const encuentroAbierto = useMemo(() => encuentros.rows.find((e) => e.estado === 'abierto') || null, [encuentros.rows])
+  const encuentroTitulo =
+    diasEnc === 0
+      ? 'Hoy es su encuentro'
+      : diasEnc === 1
+        ? 'Mañana: su encuentro'
+        : encuentroAbierto
+          ? 'Encuentro en curso'
+          : 'Cargá el encuentro de la semana'
+  const encuentroSub = encuentroAbierto ? 'Sumá lo bueno, los puntos y los acuerdos.' : 'Su ratito para hablar de la semana.'
 
   const actual = juego.data?.actual
   const algunoMarco = actual && (actual.marcas || []).length > 0
@@ -127,35 +139,34 @@ export default function Inicio() {
         </button>
       ) : null}
 
-      {/* Recordatorio del encuentro */}
-      {diasEnc <= 1 ? (
-        <button
-          onClick={() => navigate('/nosotros')}
-          className="mb-4 flex w-full items-center gap-3 rounded-3xl border border-primary/30 bg-primary-soft p-4 text-left active:scale-[0.99]"
-        >
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-surface text-primary-strong">
-            <IconHandHeart className="h-5 w-5" />
-          </span>
-          <div className="flex-1">
-            <p className="font-display text-base font-medium text-primary-strong">
-              {diasEnc === 0 ? 'Hoy es su encuentro' : 'Mañana: su encuentro'}
-            </p>
-            <p className="text-sm text-muted">Un ratito para hablar de la semana.</p>
-          </div>
-          <IconChevronRight className="h-5 w-5 text-primary-strong/60" />
-        </button>
-      ) : null}
-
       {/* Secciones */}
       <h2 className="mb-2.5 mt-6 px-1 text-sm font-semibold uppercase tracking-wide text-soft">Secciones</h2>
       <div className="grid grid-cols-2 gap-3">
         <SectionBlock Icon={IconCharlar} title="Charlar" stat={temasPend > 0 ? `${temasPend} para hablar` : 'Todo al día'} onClick={() => navigate('/charlar')} />
         <SectionBlock Icon={IconCasa} title="Casa" stat={comprasPend > 0 ? `${comprasPend} en la lista` : 'Lista al día'} onClick={() => navigate('/casa')} />
         <SectionBlock Icon={IconPlanes} title="Planes" stat={proximas[0] ? `Próximo: ${countdownLabel(proximas[0].fecha)}` : 'Sueñen algo'} onClick={() => navigate('/planes')} />
-        <SectionBlock Icon={IconHandHeart} title="Conexión" stat="Pulso y encuentro" onClick={() => navigate('/conexion')} />
+        <SectionBlock Icon={IconHandHeart} title="Conexión" stat="Cómo venimos" onClick={() => navigate('/conexion')} />
         <SectionBlock Icon={IconFoto} title="Fotos" stat={fotos.rows.length > 0 ? `${fotos.rows.length} fotos` : 'Subí la primera'} onClick={() => navigate('/fotos')} />
         <SectionBlock Icon={IconSparkle} title="Preguntas" stat={preguntaEstado} onClick={() => navigate('/preguntas')} />
       </div>
+
+      {/* Encuentro — bloque destacado */}
+      <button
+        onClick={() => navigate('/encuentro')}
+        className={`mt-3 w-full rounded-3xl p-5 text-left transition-shadow duration-200 hover:shadow-lift ${
+          diasEnc <= 1 ? 'border border-primary/30 bg-primary-soft' : 'card'
+        }`}
+      >
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5 text-primary-strong">
+            <IconCalendar className="h-4 w-4" />
+            <span className="text-2xs font-semibold uppercase tracking-wide">Encuentro</span>
+          </div>
+          <IconChevronRight className="h-5 w-5 text-soft" />
+        </div>
+        <p className="mt-1.5 font-display text-lg font-medium leading-snug">{encuentroTitulo}</p>
+        <p className="mt-1 text-sm text-muted">{encuentroSub}</p>
+      </button>
 
       {/* Resumen: próximas fechas */}
       {proximas.length > 0 ? (
