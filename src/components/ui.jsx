@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { IconX } from './icons'
 
 // ── Bottom sheet (en celular) / modal centrado (en desktop) ──────────────────
@@ -24,7 +25,9 @@ export function Sheet({ open, onClose, title, children, maxWidth = 'max-w-md' })
   }, [open, onClose])
 
   if (!open) return null
-  return (
+  // Portal a <body>: así el overlay fixed se mide contra la pantalla y no contra
+  // el `.page` (que tiene transform por la animación y rompía el posicionamiento).
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-4"
       role="dialog"
@@ -37,20 +40,26 @@ export function Sheet({ open, onClose, title, children, maxWidth = 'max-w-md' })
       />
       <div
         ref={panelRef}
-        className={`relative w-full ${maxWidth} bg-surface rounded-t-4xl sm:rounded-4xl shadow-lift
-          px-5 pt-3 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] sm:pb-6
-          max-h-[92vh] overflow-y-auto animate-sheet-up`}
+        className={`relative flex w-full ${maxWidth} max-h-[92svh] flex-col overflow-hidden
+          rounded-t-4xl sm:rounded-4xl bg-surface shadow-lift animate-sheet-up`}
       >
-        <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-border sm:hidden" />
-        <div className="mb-5 flex items-center justify-between">
-          <h2 className="font-display text-2xl font-medium tracking-tight">{title}</h2>
-          <button className="icon-btn h-9 w-9" onClick={onClose} aria-label="Cerrar">
-            <IconX className="h-5 w-5" />
-          </button>
+        {/* header fijo */}
+        <div className="shrink-0 px-5 pt-3">
+          <div className="mx-auto mb-2 h-1.5 w-10 rounded-full bg-border sm:hidden" />
+          <div className="flex items-center justify-between pb-1">
+            <h2 className="font-display text-2xl font-medium tracking-tight">{title}</h2>
+            <button className="icon-btn h-9 w-9" onClick={onClose} aria-label="Cerrar">
+              <IconX className="h-5 w-5" />
+            </button>
+          </div>
         </div>
-        {children}
+        {/* cuerpo scrolleable */}
+        <div className="flex-1 overflow-y-auto px-5 pt-3 pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] sm:pb-6">
+          {children}
+        </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 
@@ -71,7 +80,7 @@ export function ConfirmDialog({
     return () => document.removeEventListener('keydown', onKey)
   }, [open, onClose])
   if (!open) return null
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-5" role="alertdialog" aria-modal="true">
       <div className="absolute inset-0 bg-text/35 animate-fade-in" onClick={onClose} />
       <div className="relative w-full max-w-xs rounded-4xl bg-surface p-6 text-center shadow-lift animate-scale-in">
@@ -93,7 +102,8 @@ export function ConfirmDialog({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 
@@ -170,8 +180,8 @@ export function Toggle({ checked, onChange, label, id }) {
         }`}
       >
         <span
-          className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform duration-200 ease-gentle ${
-            checked ? 'translate-x-[1.35rem]' : 'translate-x-0.5'
+          className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform duration-200 ease-gentle ${
+            checked ? 'translate-x-[1.25rem]' : 'translate-x-0'
           }`}
         />
       </span>
