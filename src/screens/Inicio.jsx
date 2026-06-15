@@ -11,6 +11,7 @@ import {
   IconCasa,
   IconPlanes,
   IconHandHeart,
+  IconFoto,
   IconSparkle,
   IconChevronRight,
   IconCalendar,
@@ -35,6 +36,7 @@ export default function Inicio() {
   const temas = useRealtimeTable('temas')
   const compras = useRealtimeTable('compras')
   const planes = useRealtimeTable('planes')
+  const fotos = useRealtimeTable('fotos')
 
   const temasPend = useMemo(() => temas.rows.filter((t) => t.estado === 'pendiente').length, [temas.rows])
   const comprasPend = useMemo(() => compras.rows.filter((c) => !c.comprado).length, [compras.rows])
@@ -150,28 +152,10 @@ export default function Inicio() {
         <SectionBlock Icon={IconCharlar} title="Charlar" stat={temasPend > 0 ? `${temasPend} para hablar` : 'Todo al día'} onClick={() => navigate('/charlar')} />
         <SectionBlock Icon={IconCasa} title="Casa" stat={comprasPend > 0 ? `${comprasPend} en la lista` : 'Lista al día'} onClick={() => navigate('/casa')} />
         <SectionBlock Icon={IconPlanes} title="Planes" stat={proximas[0] ? `Próximo: ${countdownLabel(proximas[0].fecha)}` : 'Sueñen algo'} onClick={() => navigate('/planes')} />
-        <SectionBlock Icon={IconHandHeart} title="Nosotros" stat="Pulso · encuentro · fotos" onClick={() => navigate('/nosotros')} />
+        <SectionBlock Icon={IconHandHeart} title="Conexión" stat="Pulso y encuentro" onClick={() => navigate('/conexion')} />
+        <SectionBlock Icon={IconFoto} title="Fotos" stat={fotos.rows.length > 0 ? `${fotos.rows.length} fotos` : 'Subí la primera'} onClick={() => navigate('/fotos')} />
+        <SectionBlock Icon={IconSparkle} title="Preguntas" stat={preguntaEstado} onClick={() => navigate('/preguntas')} />
       </div>
-
-      {/* Pregunta — bloque destacado */}
-      <button
-        onClick={() => navigate('/preguntas')}
-        className="card mt-3 w-full p-5 text-left transition-shadow duration-200 hover:shadow-lift"
-      >
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5 text-primary-strong">
-            <IconSparkle className="h-4 w-4" />
-            <span className="text-2xs font-semibold uppercase tracking-wide">Preguntas</span>
-          </div>
-          <IconChevronRight className="h-5 w-5 text-soft" />
-        </div>
-        {actual ? (
-          <p className="mt-1.5 font-display text-lg font-medium leading-snug">{actual.texto}</p>
-        ) : (
-          <p className="mt-1.5 font-display text-lg font-medium leading-snug">Conocerse un poquito más</p>
-        )}
-        <p className={`mt-1.5 text-sm ${actual?.resuelta ? 'font-semibold text-accent-strong' : 'text-muted'}`}>{preguntaEstado}</p>
-      </button>
 
       {/* Resumen: próximas fechas */}
       {proximas.length > 0 ? (

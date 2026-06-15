@@ -9,6 +9,8 @@ import Charlar from './screens/Charlar'
 import Casa from './screens/Casa'
 import Planes from './screens/Planes'
 import Nosotros from './screens/Nosotros'
+import Conexion from './screens/Conexion'
+import Fotos from './screens/Fotos'
 import Preguntas from './screens/Preguntas'
 import Ajustes from './screens/Ajustes'
 
@@ -35,6 +37,8 @@ export default function App() {
           <Route path="/casa" element={<Casa />} />
           <Route path="/planes" element={<Planes />} />
           <Route path="/nosotros" element={<Nosotros />} />
+          <Route path="/conexion" element={<Conexion />} />
+          <Route path="/fotos" element={<Fotos />} />
           <Route path="/preguntas" element={<Preguntas />} />
           <Route path="/ajustes" element={<Ajustes />} />
           {/* compras/caja viejas → ahora viven en Casa */}

@@ -51,6 +51,12 @@ export default function Fotos() {
         ) : null}
       </div>
 
+      {fotos.length > 0 ? (
+        <p className="mb-3 px-1 text-sm text-muted">
+          {fotos.length} {fotos.length === 1 ? 'foto' : 'fotos'}
+        </p>
+      ) : null}
+
       {loading ? (
         <div className="grid grid-cols-3 gap-1.5">
           {Array.from({ length: 6 }).map((_, i) => (

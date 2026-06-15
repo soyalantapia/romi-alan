@@ -1,44 +1,44 @@
-import { useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import Heart from '../components/Heart'
-import { Segmented } from '../components/ui'
-import Pulso from '../components/Pulso'
-import Encuentro from '../components/Encuentro'
-import Fotos from '../components/Fotos'
+import { IconHandHeart, IconFoto, IconSparkle, IconChevronRight } from '../components/icons'
 
-// "Nosotros" reúne el vínculo (pulso + encuentro), las preguntas y las fotos.
+const SECCIONES = [
+  { to: '/conexion', Icon: IconHandHeart, title: 'Conexión', desc: 'El pulso de la relación y el encuentro semanal.' },
+  { to: '/fotos', Icon: IconFoto, title: 'Fotos', desc: 'Nuestra galería compartida.' },
+  { to: '/preguntas', Icon: IconSparkle, title: 'Preguntas', desc: 'Un juego para conocerse más, por turnos.' },
+]
+
+// Nosotros = el hub de las cosas de la pareja, cada una en su sección.
 export default function Nosotros() {
-  const location = useLocation()
-  const [tab, setTab] = useState(location.state?.tab || 'vinculo')
+  const navigate = useNavigate()
   return (
     <div className="page">
-      <header className="mb-4 flex items-center justify-between">
+      <header className="mb-5 flex items-center justify-between">
         <div>
           <h1 className="font-display text-3xl font-medium tracking-tight">Nosotros</h1>
-          <p className="mt-0.5 text-sm text-muted">Nuestro vínculo, las preguntas y las fotos.</p>
+          <p className="mt-0.5 text-sm text-muted">Nuestro espacio de pareja.</p>
         </div>
         <Heart variant="duo" className="h-8 w-8" />
       </header>
 
-      <div className="mb-5">
-        <Segmented
-          value={tab}
-          onChange={setTab}
-          options={[
-            { value: 'vinculo', label: 'Conexión' },
-            { value: 'fotos', label: 'Fotos' },
-          ]}
-        />
+      <div className="space-y-3">
+        {SECCIONES.map((s) => (
+          <button
+            key={s.to}
+            onClick={() => navigate(s.to)}
+            className="card flex w-full items-center gap-4 p-5 text-left transition-all duration-200 ease-gentle hover:-translate-y-0.5 hover:shadow-lift active:scale-[0.99]"
+          >
+            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-primary-soft text-primary-strong">
+              <s.Icon className="h-6 w-6" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="font-display text-lg font-medium leading-tight">{s.title}</p>
+              <p className="mt-0.5 text-sm text-muted">{s.desc}</p>
+            </div>
+            <IconChevronRight className="h-5 w-5 shrink-0 text-soft" />
+          </button>
+        ))}
       </div>
-
-      {tab === 'vinculo' ? (
-        <div className="space-y-8">
-          <Pulso />
-          <Encuentro />
-        </div>
-      ) : (
-        <Fotos />
-      )}
     </div>
   )
 }
