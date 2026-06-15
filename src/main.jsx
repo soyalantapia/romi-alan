@@ -5,6 +5,7 @@ import './index.css'
 import App from './App'
 import { AuthProvider } from './context/AuthContext'
 import { ProfilesProvider } from './context/ProfilesContext'
+import { ConfigProvider } from './context/ConfigContext'
 import { bootstrapAppearance } from './lib/appearance'
 
 bootstrapAppearance()
@@ -14,7 +15,9 @@ createRoot(document.getElementById('root')).render(
     <BrowserRouter>
       <AuthProvider>
         <ProfilesProvider>
-          <App />
+          <ConfigProvider>
+            <App />
+          </ConfigProvider>
         </ProfilesProvider>
       </AuthProvider>
     </BrowserRouter>

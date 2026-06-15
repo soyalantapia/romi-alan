@@ -39,4 +39,10 @@ export const api = {
   insert: (table, payload) => request(`/${table}`, { method: 'POST', body: payload }),
   update: (table, id, patch) => request(`/${table}/${id}`, { method: 'PATCH', body: patch }),
   remove: (table, id) => request(`/${table}/${id}`, { method: 'DELETE' }),
+  // ── Addendum ──
+  getConfig: () => request('/config'),
+  setConfig: (clave, valor) => request(`/config/${clave}`, { method: 'PUT', body: { valor } }),
+  aportarMeta: (id, monto) => request(`/metas/${id}/aportar`, { method: 'POST', body: { monto } }),
+  // URL directa de una foto (con token en query para que <img> la cargue)
+  fotoUrl: (id) => `/api/fotos/${id}/raw?token=${encodeURIComponent(getToken() || '')}`,
 }

@@ -25,12 +25,7 @@ export default function Compras() {
   const vaciar = () => comprados.forEach((c) => remove(c.id))
 
   return (
-    <div className="page">
-      <header className="mb-5">
-        <h1 className="font-display text-3xl font-medium tracking-tight">Compras</h1>
-        <p className="mt-0.5 text-sm text-muted">La lista de la casa, compartida y al instante.</p>
-      </header>
-
+    <div>
       <QuickAdd onAdd={(payload) => add({ ...payload, creado_por: me?.id })} />
 
       <div className="mt-6">

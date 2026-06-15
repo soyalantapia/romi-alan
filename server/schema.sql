@@ -75,3 +75,84 @@ create index if not exists idx_temas_estado on temas(estado);
 create index if not exists idx_compras_comprado on compras(comprado);
 create index if not exists idx_movimientos_fecha on movimientos(fecha);
 create index if not exists idx_planes_fecha on planes(fecha);
+
+-- ════════════════════════════════════════════════════════════════════════
+--  ADDENDUM — Nosotros (encuentro, pulso, fotos), metas, config, hitos
+-- ════════════════════════════════════════════════════════════════════════
+
+-- Encuentro semanal: puntos para trabajar (en primera persona)
+create table if not exists puntos_trabajar (
+  id         uuid primary key default gen_random_uuid(),
+  texto      text not null,
+  tipo       text not null default 'propio' check (tipo in ('propio','necesidad')),
+  estado     text not null default 'activo' check (estado in ('activo','logrado')),
+  creado_por uuid not null references perfiles(id),
+  created_at timestamptz not null default now(),
+  logrado_at timestamptz
+);
+
+-- Lo bueno de la semana: momentos + agradecimientos
+create table if not exists momentos (
+  id         uuid primary key default gen_random_uuid(),
+  texto      text not null,
+  tipo       text not null default 'momento' check (tipo in ('momento','agradecimiento')),
+  creado_por uuid not null references perfiles(id),
+  created_at timestamptz not null default now()
+);
+
+-- Los encuentros realizados (compartidos, sin autor)
+create table if not exists encuentros (
+  id         uuid primary key default gen_random_uuid(),
+  fecha      date not null default current_date,
+  acuerdos   text,
+  realizado  boolean not null default false,
+  created_at timestamptz not null default now()
+);
+
+-- Pulso de la relación (cada fila = una marca de una persona sobre un pilar)
+create table if not exists pulso (
+  id             uuid primary key default gen_random_uuid(),
+  pilar          text not null check (pilar in ('amor','relacion','pasion')),
+  nivel          text not null check (nivel in ('pleno','bien','necesita_carino')),
+  nota           text,
+  registrado_por uuid not null references perfiles(id),
+  created_at     timestamptz not null default now()
+);
+
+-- Metas de ahorro
+create table if not exists metas (
+  id         uuid primary key default gen_random_uuid(),
+  nombre     text not null,
+  objetivo   numeric(12,2) not null check (objetivo > 0),
+  acumulado  numeric(12,2) not null default 0,
+  estado     text not null default 'activa' check (estado in ('activa','lograda')),
+  creado_por uuid not null references perfiles(id),
+  created_at timestamptz not null default now(),
+  lograda_at timestamptz
+);
+
+-- Fotos: en vez de Supabase Storage, guardamos los bytes (comprimidos) acá.
+create table if not exists fotos (
+  id          uuid primary key default gen_random_uuid(),
+  descripcion text,
+  mime        text not null default 'image/jpeg',
+  bytes       bytea not null,
+  subido_por  uuid not null references perfiles(id),
+  fecha       date not null default current_date,
+  created_at  timestamptz not null default now()
+);
+
+-- Config clave-valor (fecha de inicio, día del encuentro, link álbum, etc.)
+create table if not exists config (
+  clave      text primary key,
+  valor      text,
+  updated_at timestamptz not null default now()
+);
+insert into config (clave, valor) values ('fecha_inicio_relacion', '2026-05-21')
+  on conflict (clave) do nothing;
+insert into config (clave, valor) values ('encuentro_dia', '0')   -- 0 = domingo
+  on conflict (clave) do nothing;
+
+create index if not exists idx_puntos_estado on puntos_trabajar(estado);
+create index if not exists idx_pulso_created on pulso(created_at);
+create index if not exists idx_fotos_created on fotos(created_at);

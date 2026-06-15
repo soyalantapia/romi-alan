@@ -125,3 +125,27 @@ proyecto):
 
 No hay registro público. Las únicas dos cuentas se crean con `npm run seed`
 (arriba). Cada perfil tiene nombre y color, editables después desde **Ajustes**.
+**Login sin contraseña:** se entra tocando "Soy Romi" / "Soy Alan" (la sesión
+queda guardada). El email/clave quedan como fallback. Si la sesión se pierde,
+la app vuelve sola al selector.
+
+## Novedades (addendum)
+
+Navegación de 5 ítems: **Inicio · Charlar · Casa · Planes · Nosotros**.
+
+- **Casa** — fusiona **Compras** + **Caja** en pestañas, e incluye **Metas de
+  ahorro** (barra de progreso, aportar, festejo al 100%).
+- **Nosotros** — **Pulso** de la relación (Amor/Relación/Pasión, niveles
+  pleno/bien/necesita-cariño, tono que cuida + historial), **Encuentro semanal**
+  (lo bueno primero → puntos en primera persona → flujo guiado → acuerdos +
+  historial) y **Fotos** (galería propia).
+- **Inicio** — contador "Llevamos X días", aniversario mensual (día 21) y
+  cuenta regresiva al anual; recordatorio del encuentro; mini-progreso de meta.
+- **Ajustes** — fecha de inicio de la relación, día del encuentro y link del
+  álbum de Google Fotos (tabla `config` clave-valor).
+
+**Fotos sin Supabase Storage:** como el stack real es Railway (no Supabase), las
+fotos se comprimen en el cliente y se guardan como **bytes en Postgres**; se
+sirven por un endpoint propio (`/api/fotos/:id/raw`) con token, nunca públicas.
+Tablas nuevas en `server/schema.sql`: `puntos_trabajar`, `momentos`,
+`encuentros`, `pulso`, `metas`, `fotos`, `config`.

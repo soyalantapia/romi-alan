@@ -1,12 +1,12 @@
 import { NavLink } from 'react-router-dom'
-import { IconInicio, IconCharlar, IconCompras, IconCaja, IconPlanes } from './icons'
+import { IconInicio, IconCharlar, IconCasa, IconPlanes, IconHandHeart } from './icons'
 
 const TABS = [
   { to: '/', label: 'Inicio', Icon: IconInicio, end: true },
   { to: '/charlar', label: 'Charlar', Icon: IconCharlar },
-  { to: '/compras', label: 'Compras', Icon: IconCompras },
-  { to: '/caja', label: 'Caja', Icon: IconCaja },
+  { to: '/casa', label: 'Casa', Icon: IconCasa },
   { to: '/planes', label: 'Planes', Icon: IconPlanes },
+  { to: '/nosotros', label: 'Nosotros', Icon: IconHandHeart },
 ]
 
 export default function BottomNav() {

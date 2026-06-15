@@ -47,6 +47,14 @@ export const IconCaja = (p) => (
   </Svg>
 )
 
+export const IconCasa = (p) => (
+  <Svg {...p}>
+    <path d="M5 9.2h14l-1.2 8.4a2 2 0 0 1-2 1.7H8.2a2 2 0 0 1-2-1.7L5 9.2Z" />
+    <path d="M9.2 6.4 7.6 9.2M14.8 6.4l1.6 2.8" />
+    <path d="M9.6 12.4v3.4M12 12.4v3.4M14.4 12.4v3.4" />
+  </Svg>
+)
+
 export const IconPlanes = (p) => (
   <Svg {...p}>
     <rect x="4" y="5.4" width="16" height="14.6" rx="2.4" />
@@ -146,6 +154,14 @@ export const IconEyeOff = (p) => (
     <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" />
   </Svg>
 )
+export const IconFoto = (p) => (
+  <Svg {...p}>
+    <rect x="3.5" y="5.5" width="17" height="13" rx="2.5" />
+    <circle cx="8.5" cy="10" r="1.4" />
+    <path d="M4.5 17.5 9.5 13l3 2.5L16 12l3.6 3.6" />
+  </Svg>
+)
+
 export const IconHandHeart = (p) => (
   <Svg {...p}>
     <path d="M3 13.5l3-1 5 2 3.5-1a1.4 1.4 0 0 1 .6 2.6L11 18l-5-1.5H3" />

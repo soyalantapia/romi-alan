@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useProfiles } from '../context/ProfilesContext'
+import { useConfig } from '../context/ConfigContext'
 import { PersonAvatar } from '../components/PersonTag'
 import Heart from '../components/Heart'
 import { IconLogout, IconCheck } from '../components/icons'
@@ -14,13 +15,25 @@ import {
 import { Toggle } from '../components/ui'
 
 const SWATCHES = ['#C7A3DD', '#9892D6', '#B58FD6', '#8AA8C4', '#8FA98E', '#CE8A99', '#D8A07C', '#C9A26B']
+const DIAS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
 
 export default function Ajustes() {
   const { signOut } = useAuth()
   const { me, updateProfile } = useProfiles()
+  const { config, get, set } = useConfig()
   const [nombre, setNombre] = useState(me?.nombre || '')
   const [accent, setAccentState] = useState(getAccent())
   const [dark, setDark] = useState(getTheme() === 'dark')
+  const [fechaIni, setFechaIni] = useState('2026-05-21')
+  const [encDia, setEncDia] = useState('0')
+  const [album, setAlbum] = useState('')
+
+  useEffect(() => {
+    setFechaIni(get('fecha_inicio_relacion', '2026-05-21'))
+    setEncDia(get('encuentro_dia', '0'))
+    setAlbum(get('album_google_fotos', ''))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config])
 
   const nombreDirty = nombre.trim() && nombre.trim() !== me?.nombre
 
@@ -114,6 +127,57 @@ export default function Ajustes() {
         <div className="mt-5 flex items-center justify-between">
           <span className="text-sm font-medium text-text">Modo oscuro</span>
           <Toggle checked={dark} onChange={toggleDark} />
+        </div>
+      </section>
+
+      {/* Nuestra relación */}
+      <section className="card mt-4 p-5">
+        <h2 className="font-display text-lg font-medium">Nuestra relación</h2>
+        <div className="mt-4">
+          <label className="field-label" htmlFor="fini">Fecha de inicio</label>
+          <input
+            id="fini"
+            type="date"
+            className="input nums"
+            value={fechaIni}
+            onChange={(e) => {
+              setFechaIni(e.target.value)
+              set('fecha_inicio_relacion', e.target.value)
+            }}
+          />
+          <p className="mt-1.5 text-xs text-soft">Desde acá contamos los días juntos y los aniversarios.</p>
+        </div>
+        <div className="mt-4">
+          <label className="field-label" htmlFor="edia">Día del encuentro</label>
+          <select
+            id="edia"
+            className="input"
+            value={encDia}
+            onChange={(e) => {
+              setEncDia(e.target.value)
+              set('encuentro_dia', e.target.value)
+            }}
+          >
+            {DIAS.map((d, i) => (
+              <option key={i} value={String(i)}>
+                {d}
+              </option>
+            ))}
+          </select>
+          <p className="mt-1.5 text-xs text-soft">Te lo recordamos en Inicio cuando se acerca.</p>
+        </div>
+        <div className="mt-4">
+          <label className="field-label" htmlFor="alb">Álbum de Google Fotos</label>
+          <input
+            id="alb"
+            type="url"
+            className="input"
+            placeholder="https://photos.app.goo.gl/…"
+            value={album}
+            onChange={(e) => setAlbum(e.target.value)}
+            onBlur={() => set('album_google_fotos', album.trim())}
+          />
+          <p className="mt-1.5 text-xs text-soft">Opcional: un botón en Fotos abre el álbum.</p>
         </div>
       </section>
 

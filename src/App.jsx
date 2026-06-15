@@ -6,9 +6,9 @@ import ErrorBoundary from './components/ErrorBoundary'
 import Login from './screens/Login'
 import Inicio from './screens/Inicio'
 import Charlar from './screens/Charlar'
-import Compras from './screens/Compras'
-import Caja from './screens/Caja'
+import Casa from './screens/Casa'
 import Planes from './screens/Planes'
+import Nosotros from './screens/Nosotros'
 import Ajustes from './screens/Ajustes'
 
 function FullScreenLoader() {
@@ -31,10 +31,13 @@ export default function App() {
         <Route element={<Layout />}>
           <Route path="/" element={<Inicio />} />
           <Route path="/charlar" element={<Charlar />} />
-          <Route path="/compras" element={<Compras />} />
-          <Route path="/caja" element={<Caja />} />
+          <Route path="/casa" element={<Casa />} />
           <Route path="/planes" element={<Planes />} />
+          <Route path="/nosotros" element={<Nosotros />} />
           <Route path="/ajustes" element={<Ajustes />} />
+          {/* compras/caja viejas → ahora viven en Casa */}
+          <Route path="/compras" element={<Navigate to="/casa" replace />} />
+          <Route path="/caja" element={<Navigate to="/casa" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

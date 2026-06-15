@@ -136,3 +136,47 @@ export function greeting() {
   if (h < 20) return 'Buenas tardes'
   return 'Buenas noches'
 }
+
+// ── Contador y hitos de la relación ───────────────────────────────────────────
+function mesesEntre(iy, im, idd, y, m, d) {
+  let n = (y - iy) * 12 + (m - im)
+  if (d < idd) n -= 1
+  return Math.max(0, n)
+}
+
+/** Días juntos + próximo aniversario mensual (día `idd`) y anual, desde una fecha ISO. */
+export function hitosRelacion(inicioISO) {
+  if (!inicioISO) return null
+  const today = todayISO()
+  const [ty, tm, td] = today.split('-').map(Number)
+  const [iy, im, idd] = inicioISO.slice(0, 10).split('-').map(Number)
+  if (!iy || !im || !idd) return null
+
+  const dias = Math.round((Date.UTC(ty, tm - 1, td) - Date.UTC(iy, im - 1, idd)) / 86400000)
+  const mesesHoy = mesesEntre(iy, im, idd, ty, tm, td)
+
+  // próximo aniversario mensual (día idd de este mes o el siguiente)
+  let my = ty
+  let mm = tm
+  if (td > idd) {
+    mm += 1
+    if (mm > 12) {
+      mm = 1
+      my += 1
+    }
+  }
+  const mensualISO = `${my}-${String(mm).padStart(2, '0')}-${String(idd).padStart(2, '0')}`
+
+  // próximo aniversario anual (día idd del mes im)
+  let ay = ty
+  const yaPaso = tm > im || (tm === im && td > idd)
+  if (yaPaso) ay += 1
+  const anualISO = `${ay}-${String(im).padStart(2, '0')}-${String(idd).padStart(2, '0')}`
+
+  return {
+    dias,
+    mesesHoy,
+    mensual: { iso: mensualISO, dias: daysUntil(mensualISO), meses: mesesEntre(iy, im, idd, my, mm, idd) },
+    anual: { iso: anualISO, dias: daysUntil(anualISO), anios: ay - iy },
+  }
+}

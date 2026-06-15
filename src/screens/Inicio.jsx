@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useRealtimeTable } from '../hooks/useRealtimeTable'
 import { useProfiles } from '../context/ProfilesContext'
+import { useConfig } from '../context/ConfigContext'
 import Heart from '../components/Heart'
 import { PersonAvatar } from '../components/PersonTag'
 import { SkeletonCard } from '../components/ui'
@@ -15,6 +16,7 @@ import {
   IconArrowUp,
   IconArrowDown,
   IconCalendar,
+  IconHandHeart,
 } from '../components/icons'
 import {
   greeting,
@@ -25,6 +27,7 @@ import {
   countdownLabel,
   daysUntil,
   todayISO,
+  hitosRelacion,
 } from '../lib/format'
 
 const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s)
@@ -32,10 +35,12 @@ const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s)
 export default function Inicio() {
   const navigate = useNavigate()
   const { me } = useProfiles()
+  const { get } = useConfig()
   const temas = useRealtimeTable('temas')
   const compras = useRealtimeTable('compras')
   const movimientos = useRealtimeTable('movimientos')
   const planes = useRealtimeTable('planes')
+  const metas = useRealtimeTable('metas')
 
   const loading = temas.loading || compras.loading || movimientos.loading || planes.loading
 
@@ -54,6 +59,14 @@ export default function Inicio() {
     () =>
       [...movimientos.rows].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0] || null,
     [movimientos.rows]
+  )
+
+  const metaTop = useMemo(
+    () =>
+      metas.rows
+        .filter((m) => m.estado === 'activa')
+        .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))[0] || null,
+    [metas.rows]
   )
 
   const proximas = useMemo(
@@ -78,17 +91,20 @@ export default function Inicio() {
     [temasPend]
   )
 
-  const todoVacio =
-    !loading &&
-    temas.rows.length === 0 &&
-    compras.rows.length === 0 &&
-    movimientos.rows.length === 0 &&
-    planes.rows.length === 0
+  // Contador y hitos
+  const fechaInicio = get('fecha_inicio_relacion', '2026-05-21')
+  const hitos = hitosRelacion(fechaInicio)
+
+  // Recordatorio del encuentro semanal
+  const [yy, mm, dd] = todayISO().split('-').map(Number)
+  const dow = new Date(Date.UTC(yy, mm - 1, dd)).getUTCDay()
+  const encDia = Number(get('encuentro_dia', '0'))
+  const diasEnc = (encDia - dow + 7) % 7
 
   return (
     <div className="page">
       {/* Hero — el signature */}
-      <div className="relative mb-5 overflow-hidden rounded-4xl bg-surface p-6 shadow-soft">
+      <div className="relative mb-4 overflow-hidden rounded-4xl bg-surface p-6 shadow-soft">
         <div
           className="pointer-events-none absolute inset-0 opacity-90"
           style={{
@@ -114,11 +130,71 @@ export default function Inicio() {
         </div>
       </div>
 
+      {/* Contador y hitos */}
+      {hitos ? (
+        <button
+          onClick={() => navigate('/nosotros')}
+          className="relative mb-4 w-full overflow-hidden rounded-4xl bg-surface p-5 text-left shadow-soft transition-shadow hover:shadow-lift"
+        >
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{
+              backgroundImage:
+                'radial-gradient(120% 120% at 100% 0%, rgb(var(--c-primary) / 0.16), transparent 60%)',
+            }}
+          />
+          <div className="relative">
+            <div className="flex items-center gap-1.5 text-primary-strong">
+              <Heart variant="solid" className="h-4 w-4" />
+              <span className="text-2xs font-semibold uppercase tracking-wide">Nosotros</span>
+            </div>
+            <p className="mt-1.5 font-display text-3xl font-medium tracking-tight">
+              Llevamos <span className="nums text-primary-strong">{hitos.dias}</span> días
+            </p>
+            <p className="text-sm text-muted">
+              {hitos.mesesHoy} {hitos.mesesHoy === 1 ? 'mes' : 'meses'} juntos · desde el {formatDayMonth(fechaInicio)}
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {hitos.mensual.dias === 0 ? (
+                <span className="chip bg-primary-soft text-primary-strong">¡Hoy cumplen {hitos.mensual.meses} meses!</span>
+              ) : hitos.mensual.dias <= 7 ? (
+                <span className="chip bg-primary-soft text-primary-strong">
+                  En {hitos.mensual.dias} {hitos.mensual.dias === 1 ? 'día' : 'días'}: {hitos.mensual.meses}{' '}
+                  {hitos.mensual.meses === 1 ? 'mes' : 'meses'}
+                </span>
+              ) : null}
+              <span className="chip bg-accent-soft text-accent-strong">
+                {hitos.anual.dias === 0 ? '¡Feliz aniversario!' : `Aniversario en ${hitos.anual.dias} días`}
+              </span>
+            </div>
+          </div>
+        </button>
+      ) : null}
+
+      {/* Recordatorio del encuentro */}
+      {diasEnc <= 1 ? (
+        <button
+          onClick={() => navigate('/nosotros')}
+          className="mb-4 flex w-full items-center gap-3 rounded-3xl border border-primary/30 bg-primary-soft p-4 text-left transition-transform active:scale-[0.99]"
+        >
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-surface text-primary-strong">
+            <IconHandHeart className="h-5 w-5" />
+          </span>
+          <div className="flex-1">
+            <p className="font-display text-base font-medium text-primary-strong">
+              {diasEnc === 0 ? 'Hoy es su encuentro' : 'Mañana: su encuentro'}
+            </p>
+            <p className="text-sm text-muted">Un ratito para hablar de la semana.</p>
+          </div>
+          <IconChevronRight className="h-5 w-5 text-primary-strong/60" />
+        </button>
+      ) : null}
+
       {/* Carga rápida */}
       <div className="mb-6 grid grid-cols-4 gap-2">
         <QuickBtn label="Tema" Icon={IconCharlar} onClick={() => navigate('/charlar')} />
-        <QuickBtn label="Compra" Icon={IconCompras} onClick={() => navigate('/compras')} />
-        <QuickBtn label="Plata" Icon={IconCaja} onClick={() => navigate('/caja')} />
+        <QuickBtn label="Compra" Icon={IconCompras} onClick={() => navigate('/casa')} />
+        <QuickBtn label="Plata" Icon={IconCaja} onClick={() => navigate('/casa')} />
         <QuickBtn label="Plan" Icon={IconPlanes} onClick={() => navigate('/planes')} />
       </div>
 
@@ -127,15 +203,6 @@ export default function Inicio() {
           <SkeletonCard />
           <SkeletonCard />
           <SkeletonCard />
-        </div>
-      ) : todoVacio ? (
-        <div className="card flex flex-col items-center px-6 py-12 text-center">
-          <Heart variant="duo" className="h-14 w-14 animate-heartbeat" />
-          <p className="mt-4 font-display text-xl">Bienvenidos a su espacio</p>
-          <p className="mt-1.5 max-w-[18rem] text-sm leading-relaxed text-muted">
-            Carguen la primera cosa —un tema para charlar, algo del súper, un gasto o un plan— y va a aparecer
-            acá y en los dos teléfonos.
-          </p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -160,7 +227,7 @@ export default function Inicio() {
           ) : null}
 
           {/* Caja */}
-          <Card onClick={() => navigate('/caja')} title="Caja" Icon={IconCaja}>
+          <Card onClick={() => navigate('/casa')} title="Caja" Icon={IconCaja}>
             <p className={`nums mt-1 font-display text-4xl font-medium tracking-tight ${saldo < 0 ? 'text-expense' : 'text-text'}`}>
               {formatMoney(saldo)}
             </p>
@@ -177,6 +244,7 @@ export default function Inicio() {
             ) : (
               <p className="mt-2 text-sm text-soft">Todavía sin movimientos.</p>
             )}
+            {metaTop ? <MetaMini meta={metaTop} /> : null}
           </Card>
 
           {/* Temas */}
@@ -197,7 +265,7 @@ export default function Inicio() {
           </Card>
 
           {/* Compras */}
-          <Card onClick={() => navigate('/compras')} title="Compras" Icon={IconCompras} badge={comprasPend.length}>
+          <Card onClick={() => navigate('/casa')} title="Compras" Icon={IconCompras} badge={comprasPend.length}>
             {comprasPend.length > 0 ? (
               <p className="mt-1 text-sm text-muted">
                 {comprasPend.length} {comprasPend.length === 1 ? 'cosa para comprar' : 'cosas para comprar'}.
@@ -208,6 +276,23 @@ export default function Inicio() {
           </Card>
         </div>
       )}
+    </div>
+  )
+}
+
+function MetaMini({ meta }) {
+  const obj = Number(meta.objetivo) || 0
+  const acu = Number(meta.acumulado) || 0
+  const pct = obj > 0 ? Math.min(100, Math.round((acu / obj) * 100)) : 0
+  return (
+    <div className="mt-3 border-t border-border/60 pt-3">
+      <div className="flex items-center justify-between text-sm">
+        <span className="truncate text-muted">Meta: {meta.nombre}</span>
+        <span className="nums font-semibold text-primary-strong">{pct}%</span>
+      </div>
+      <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-surface-2">
+        <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
+      </div>
     </div>
   )
 }

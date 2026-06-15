@@ -1,5 +1,5 @@
 import { query } from './db.js'
-import { requireAuth, verifyPassword, signToken } from './auth.js'
+import { requireAuth, verifyToken, verifyPassword, signToken } from './auth.js'
 import { broadcast } from './realtime.js'
 
 // Columnas permitidas por tabla (whitelist → seguro para interpolar el nombre).
@@ -27,6 +27,32 @@ const TABLES = {
     insert: ['titulo', 'detalle', 'categoria', 'fecha', 'recordar', 'dias_antes', 'estado'],
     update: ['titulo', 'detalle', 'categoria', 'fecha', 'recordar', 'dias_antes', 'estado'],
   },
+  // ── Addendum ──
+  puntos_trabajar: {
+    author: 'creado_por',
+    insert: ['texto', 'tipo', 'estado'],
+    update: ['texto', 'tipo', 'estado'],
+  },
+  momentos: {
+    author: 'creado_por',
+    insert: ['texto', 'tipo'],
+    update: ['texto', 'tipo'],
+  },
+  encuentros: {
+    author: null, // encuentro compartido, sin autor
+    insert: ['fecha', 'acuerdos', 'realizado'],
+    update: ['fecha', 'acuerdos', 'realizado'],
+  },
+  pulso: {
+    author: 'registrado_por',
+    insert: ['pilar', 'nivel', 'nota'],
+    update: ['pilar', 'nivel', 'nota'],
+  },
+  metas: {
+    author: 'creado_por',
+    insert: ['nombre', 'objetivo', 'acumulado', 'estado'],
+    update: ['nombre', 'objetivo', 'acumulado', 'estado'],
+  },
 }
 
 const publicPerfil = (p) => ({ id: p.id, nombre: p.nombre, color: p.color, email: p.email })
@@ -47,6 +73,16 @@ function validateInsert(table, b = {}) {
     if (!['aporte', 'gasto'].includes(b.tipo)) return 'Elegí aporte o gasto'
     if (!(Number(b.monto) > 0)) return 'El monto tiene que ser mayor a 0'
   }
+  if (table === 'puntos_trabajar' && !str(b.texto)) return 'Escribí en qué querés trabajar'
+  if (table === 'momentos' && !str(b.texto)) return 'Escribí algo lindo'
+  if (table === 'pulso') {
+    if (!['amor', 'relacion', 'pasion'].includes(b.pilar)) return 'Pilar inválido'
+    if (!['pleno', 'bien', 'necesita_carino'].includes(b.nivel)) return 'Nivel inválido'
+  }
+  if (table === 'metas') {
+    if (!str(b.nombre)) return 'La meta necesita un nombre'
+    if (!(Number(b.objetivo) > 0)) return 'El objetivo tiene que ser mayor a 0'
+  }
   return null
 }
 
@@ -57,14 +93,21 @@ function dbError(e) {
 }
 
 async function handleInsert(table, body, cfg, userId) {
-  const authorVal = cfg.allowAuthorOverride && body[cfg.author] ? body[cfg.author] : userId
-  const cols = [cfg.author]
-  const vals = [authorVal]
+  const cols = []
+  const vals = []
+  if (cfg.author) {
+    cols.push(cfg.author)
+    vals.push(cfg.allowAuthorOverride && body[cfg.author] ? body[cfg.author] : userId)
+  }
   for (const k of cfg.insert) {
     if (k in body && body[k] !== undefined && body[k] !== '') {
       cols.push(k)
       vals.push(body[k])
     }
+  }
+  if (!cols.length) {
+    const { rows } = await query(`insert into ${table} default values returning *`)
+    return rows[0]
   }
   const names = cols.join(', ')
   const ph = cols.map((_, i) => `$${i + 1}`).join(', ')
@@ -95,6 +138,12 @@ async function handleUpdate(table, id, patch, cfg) {
   }
   if (table === 'planes' && 'estado' in patch) {
     raw.push(`hecho_at = ${patch.estado === 'hecho' ? 'now()' : 'null'}`)
+  }
+  if (table === 'puntos_trabajar' && 'estado' in patch) {
+    raw.push(`logrado_at = ${patch.estado === 'logrado' ? 'now()' : 'null'}`)
+  }
+  if (table === 'metas' && 'estado' in patch) {
+    raw.push(`lograda_at = ${patch.estado === 'lograda' ? 'now()' : 'null'}`)
   }
   if (!cols.length && !raw.length) return null
   const setParam = cols.map((c, i) => `${c} = $${i + 1}`)
@@ -177,6 +226,78 @@ export function mountApi(app) {
       [...vals, req.user.sub]
     )
     broadcast({ table: 'perfiles', type: 'UPDATE', row: rows[0] })
+    res.json(rows[0])
+  })
+
+  // ── Config (clave-valor compartida) ──
+  app.get('/api/config', requireAuth, async (_req, res) => {
+    const { rows } = await query('select clave, valor from config')
+    const obj = {}
+    for (const r of rows) obj[r.clave] = r.valor
+    res.json(obj)
+  })
+  app.put('/api/config/:clave', requireAuth, async (req, res) => {
+    const { clave } = req.params
+    const valor = req.body?.valor
+    await query(
+      `insert into config (clave, valor, updated_at) values ($1, $2, now())
+       on conflict (clave) do update set valor = excluded.valor, updated_at = now()`,
+      [clave, valor == null ? null : String(valor)]
+    )
+    broadcast({ table: 'config', type: 'UPDATE', row: { clave, valor } })
+    res.json({ clave, valor })
+  })
+
+  // ── Fotos (bytes comprimidos en Postgres; sin Supabase Storage) ──
+  app.get('/api/fotos', requireAuth, async (_req, res) => {
+    const { rows } = await query(
+      'select id, descripcion, mime, subido_por, fecha, created_at from fotos order by created_at desc'
+    )
+    res.json(rows)
+  })
+  app.post('/api/fotos', requireAuth, async (req, res) => {
+    try {
+      const { dataUrl, descripcion } = req.body || {}
+      const m = /^data:([^;]+);base64,(.+)$/.exec(dataUrl || '')
+      if (!m) return res.status(400).json({ error: 'Imagen inválida' })
+      const buf = Buffer.from(m[2], 'base64')
+      if (buf.length > 6 * 1024 * 1024) return res.status(413).json({ error: 'La foto pesa demasiado' })
+      const { rows } = await query(
+        `insert into fotos (descripcion, mime, bytes, subido_por) values ($1, $2, $3, $4)
+         returning id, descripcion, mime, subido_por, fecha, created_at`,
+        [descripcion || null, m[1], buf, req.user.sub]
+      )
+      broadcast({ table: 'fotos', type: 'INSERT', row: rows[0] })
+      res.status(201).json(rows[0])
+    } catch {
+      res.status(400).json({ error: 'No se pudo subir la foto' })
+    }
+  })
+  app.get('/api/fotos/:id/raw', async (req, res) => {
+    const token = (req.headers.authorization || '').replace('Bearer ', '') || req.query.token
+    if (!verifyToken(token)) return res.status(401).end()
+    const { rows } = await query('select mime, bytes from fotos where id = $1', [req.params.id])
+    if (!rows[0]) return res.status(404).end()
+    res.setHeader('Content-Type', rows[0].mime || 'image/jpeg')
+    res.setHeader('Cache-Control', 'private, max-age=31536000, immutable')
+    res.send(rows[0].bytes)
+  })
+  app.delete('/api/fotos/:id', requireAuth, async (req, res) => {
+    await query('delete from fotos where id = $1', [req.params.id])
+    broadcast({ table: 'fotos', type: 'DELETE', row: { id: req.params.id } })
+    res.status(204).end()
+  })
+
+  // ── Aportar a una meta (incremento atómico) ──
+  app.post('/api/metas/:id/aportar', requireAuth, async (req, res) => {
+    const monto = Number(req.body?.monto)
+    if (!(monto > 0)) return res.status(400).json({ error: 'El aporte tiene que ser mayor a 0' })
+    const { rows } = await query(
+      'update metas set acumulado = acumulado + $1 where id = $2 returning *',
+      [monto, req.params.id]
+    )
+    if (!rows[0]) return res.status(404).json({ error: 'Meta no encontrada' })
+    broadcast({ table: 'metas', type: 'UPDATE', row: rows[0] })
     res.json(rows[0])
   })
 

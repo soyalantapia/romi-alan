@@ -15,7 +15,7 @@ const PORT = process.env.PORT || 3001
 const app = express()
 app.disable('x-powered-by')
 app.use(compression())
-app.use(express.json({ limit: '256kb' }))
+app.use(express.json({ limit: '12mb' }))
 
 app.get('/api/health', async (_req, res) => {
   try {
