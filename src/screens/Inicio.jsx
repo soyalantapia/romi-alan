@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useRealtimeTable } from '../hooks/useRealtimeTable'
+import { useJuego } from '../hooks/useJuego'
 import { useProfiles } from '../context/ProfilesContext'
 import { useConfig } from '../context/ConfigContext'
 import Heart from '../components/Heart'
@@ -17,6 +18,7 @@ import {
   IconArrowDown,
   IconCalendar,
   IconHandHeart,
+  IconSparkle,
 } from '../components/icons'
 import {
   greeting,
@@ -34,8 +36,10 @@ const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s)
 
 export default function Inicio() {
   const navigate = useNavigate()
-  const { me } = useProfiles()
+  const { me, other } = useProfiles()
   const { get } = useConfig()
+  const juego = useJuego()
+  const preguntaActual = juego.data?.actual
   const temas = useRealtimeTable('temas')
   const compras = useRealtimeTable('compras')
   const movimientos = useRealtimeTable('movimientos')
@@ -197,6 +201,29 @@ export default function Inicio() {
         <QuickBtn label="Plata" Icon={IconCaja} onClick={() => navigate('/casa')} />
         <QuickBtn label="Plan" Icon={IconPlanes} onClick={() => navigate('/planes')} />
       </div>
+
+      {/* Pregunta del día */}
+      {preguntaActual ? (
+        <button
+          onClick={() => navigate('/nosotros', { state: { tab: 'preguntas' } })}
+          className="card mb-6 w-full p-5 text-left transition-shadow duration-200 hover:shadow-lift"
+        >
+          <div className="flex items-center gap-1.5 text-primary-strong">
+            <IconSparkle className="h-4 w-4" />
+            <span className="text-2xs font-semibold uppercase tracking-wide">Pregunta para los dos</span>
+          </div>
+          <p className="mt-1.5 font-display text-lg font-medium leading-snug">{preguntaActual.texto}</p>
+          <p className="mt-2 text-sm">
+            {preguntaActual.resuelta ? (
+              <span className="font-semibold text-accent-strong">¡Respondieron los dos! Ver respuestas →</span>
+            ) : preguntaActual.miRespuesta ? (
+              <span className="text-muted">Ya respondiste · esperando a {other?.nombre || 'tu pareja'}</span>
+            ) : (
+              <span className="font-semibold text-primary-strong">Te toca responder →</span>
+            )}
+          </p>
+        </button>
+      ) : null}
 
       {loading ? (
         <div className="space-y-4">

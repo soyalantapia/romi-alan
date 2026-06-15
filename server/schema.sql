@@ -156,3 +156,23 @@ insert into config (clave, valor) values ('encuentro_dia', '0')   -- 0 = domingo
 create index if not exists idx_puntos_estado on puntos_trabajar(estado);
 create index if not exists idx_pulso_created on pulso(created_at);
 create index if not exists idx_fotos_created on fotos(created_at);
+
+-- ── Juego de preguntas ──
+create table if not exists preguntas (
+  id           uuid primary key default gen_random_uuid(),
+  texto        text not null,
+  nivel        int not null check (nivel in (1, 2, 3)),
+  estado       text not null default 'pendiente' check (estado in ('pendiente','respondida','salteada')),
+  salteada_por uuid references perfiles(id),
+  created_at   timestamptz not null default now()
+);
+create table if not exists respuestas (
+  id             uuid primary key default gen_random_uuid(),
+  pregunta_id    uuid not null references preguntas(id) on delete cascade,
+  respondido_por uuid not null references perfiles(id),
+  texto          text not null,
+  created_at     timestamptz not null default now(),
+  unique (pregunta_id, respondido_por)
+);
+create index if not exists idx_preguntas_estado on preguntas(estado, nivel);
+create index if not exists idx_respuestas_pregunta on respuestas(pregunta_id);

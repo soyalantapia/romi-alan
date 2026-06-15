@@ -155,6 +155,26 @@ async function handleUpdate(table, id, patch, cfg) {
   return rows[0] || null
 }
 
+// ── Helpers del juego de preguntas ──
+async function getConfigVal(clave) {
+  const { rows } = await query('select valor from config where clave = $1', [clave])
+  return rows[0]?.valor || null
+}
+async function setConfigVal(clave, valor) {
+  await query(
+    `insert into config (clave, valor, updated_at) values ($1, $2, now())
+     on conflict (clave) do update set valor = excluded.valor, updated_at = now()`,
+    [clave, valor]
+  )
+}
+async function nextPendienteId() {
+  // nivel más bajo con pendientes, al azar dentro de ese nivel
+  const { rows } = await query(
+    "select id from preguntas where estado = 'pendiente' order by nivel asc, random() limit 1"
+  )
+  return rows[0]?.id || null
+}
+
 export function mountApi(app) {
   // ── ¿Quién sos? (público) — sólo nombre + color, para el selector del login ──
   app.get('/api/quienes', async (_req, res) => {
@@ -299,6 +319,125 @@ export function mountApi(app) {
     if (!rows[0]) return res.status(404).json({ error: 'Meta no encontrada' })
     broadcast({ table: 'metas', type: 'UPDATE', row: rows[0] })
     res.json(rows[0])
+  })
+
+  // ── Juego de preguntas ──
+  // Estado completo, con revelado forzado en el server: la respuesta del otro
+  // sólo viaja si AMBOS respondieron. Nadie puede espiar antes.
+  app.get('/api/juego', requireAuth, async (req, res) => {
+    const me = req.user.sub
+
+    // asegurar que haya una pregunta actual válida
+    let actualId = await getConfigVal('pregunta_actual_id')
+    let actual = null
+    if (actualId) {
+      const r = await query('select id, texto, nivel, estado from preguntas where id = $1', [actualId])
+      actual = r.rows[0] || null
+      if (actual && actual.estado === 'salteada') actual = null
+    }
+    if (!actual) {
+      const nid = await nextPendienteId()
+      if (nid) {
+        await setConfigVal('pregunta_actual_id', nid)
+        const r = await query('select id, texto, nivel, estado from preguntas where id = $1', [nid])
+        actual = r.rows[0]
+      }
+    }
+
+    let actualData = null
+    if (actual) {
+      const ans = await query('select respondido_por, texto from respuestas where pregunta_id = $1', [actual.id])
+      const mine = ans.rows.find((a) => a.respondido_por === me)
+      const others = ans.rows.filter((a) => a.respondido_por !== me)
+      const ambos = ans.rows.length >= 2
+      actualData = {
+        id: actual.id,
+        texto: actual.texto,
+        nivel: actual.nivel,
+        miRespuesta: mine ? mine.texto : null,
+        otraRespondio: others.length > 0,
+        resuelta: ambos,
+        respuestas: ambos ? ans.rows.map((a) => ({ por: a.respondido_por, texto: a.texto })) : null,
+      }
+    }
+
+    // progreso
+    const pc = await query('select nivel, estado, count(*)::int n from preguntas group by nivel, estado')
+    const progreso = {
+      respondidas: 0,
+      salteadas: 0,
+      pendientes: 0,
+      porNivel: { 1: { total: 0, respondidas: 0 }, 2: { total: 0, respondidas: 0 }, 3: { total: 0, respondidas: 0 } },
+    }
+    for (const r of pc.rows) {
+      if (r.estado === 'respondida') progreso.respondidas += r.n
+      else if (r.estado === 'salteada') progreso.salteadas += r.n
+      else progreso.pendientes += r.n
+      const nv = progreso.porNivel[r.nivel]
+      if (nv) {
+        nv.total += r.n
+        if (r.estado === 'respondida') nv.respondidas += r.n
+      }
+    }
+
+    // colección (respondidas, con las dos respuestas)
+    const col = await query(
+      `select p.id, p.texto, p.nivel,
+         json_agg(json_build_object('por', r.respondido_por, 'texto', r.texto) order by r.created_at) as respuestas
+       from preguntas p join respuestas r on r.pregunta_id = p.id
+       where p.estado = 'respondida'
+       group by p.id order by max(r.created_at) desc`
+    )
+
+    const salteadas = await query(
+      "select id, texto, nivel, salteada_por from preguntas where estado = 'salteada' order by created_at desc"
+    )
+
+    res.json({ actual: actualData, progreso, coleccion: col.rows, salteadas: salteadas.rows })
+  })
+
+  app.post('/api/preguntas/:id/responder', requireAuth, async (req, res) => {
+    const texto = (req.body?.texto || '').trim()
+    if (!texto) return res.status(400).json({ error: 'Escribí tu respuesta' })
+    const { id } = req.params
+    const pq = await query('select estado from preguntas where id = $1', [id])
+    if (!pq.rows[0]) return res.status(404).json({ error: 'No encontrada' })
+    await query(
+      `insert into respuestas (pregunta_id, respondido_por, texto) values ($1, $2, $3)
+       on conflict (pregunta_id, respondido_por) do update set texto = excluded.texto`,
+      [id, req.user.sub, texto]
+    )
+    const cnt = await query('select count(*)::int n from respuestas where pregunta_id = $1', [id])
+    if (cnt.rows[0].n >= 2) {
+      await query("update preguntas set estado = 'respondida' where id = $1 and estado <> 'salteada'", [id])
+    }
+    broadcast({ table: 'juego', type: 'UPDATE', row: {} })
+    res.json({ ok: true })
+  })
+
+  app.post('/api/preguntas/:id/saltear', requireAuth, async (req, res) => {
+    const { id } = req.params
+    await query("update preguntas set estado = 'salteada', salteada_por = $2 where id = $1", [id, req.user.sub])
+    if ((await getConfigVal('pregunta_actual_id')) === id) {
+      await setConfigVal('pregunta_actual_id', await nextPendienteId())
+    }
+    broadcast({ table: 'juego', type: 'UPDATE', row: {} })
+    res.json({ ok: true })
+  })
+
+  app.post('/api/preguntas/:id/reactivar', requireAuth, async (req, res) => {
+    await query(
+      "update preguntas set estado = 'pendiente', salteada_por = null where id = $1 and estado = 'salteada'",
+      [req.params.id]
+    )
+    broadcast({ table: 'juego', type: 'UPDATE', row: {} })
+    res.json({ ok: true })
+  })
+
+  app.post('/api/juego/siguiente', requireAuth, async (_req, res) => {
+    await setConfigVal('pregunta_actual_id', await nextPendienteId())
+    broadcast({ table: 'juego', type: 'UPDATE', row: {} })
+    res.json({ ok: true })
   })
 
   // ── CRUD genérico por tabla ──

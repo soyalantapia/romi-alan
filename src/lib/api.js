@@ -45,4 +45,10 @@ export const api = {
   aportarMeta: (id, monto) => request(`/metas/${id}/aportar`, { method: 'POST', body: { monto } }),
   // URL directa de una foto (con token en query para que <img> la cargue)
   fotoUrl: (id) => `/api/fotos/${id}/raw?token=${encodeURIComponent(getToken() || '')}`,
+  // ── Juego de preguntas ──
+  getJuego: () => request('/juego'),
+  responder: (id, texto) => request(`/preguntas/${id}/responder`, { method: 'POST', body: { texto } }),
+  saltear: (id) => request(`/preguntas/${id}/saltear`, { method: 'POST' }),
+  reactivar: (id) => request(`/preguntas/${id}/reactivar`, { method: 'POST' }),
+  siguiente: () => request('/juego/siguiente', { method: 'POST' }),
 }
