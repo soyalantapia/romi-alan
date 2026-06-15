@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useRealtimeTable } from '../hooks/useRealtimeTable'
 import { useJuego } from '../hooks/useJuego'
@@ -25,6 +25,7 @@ import {
   todayISO,
   hitosRelacion,
 } from '../lib/format'
+import { FRASES_AMOR } from '../lib/frases'
 
 const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s)
 
@@ -100,7 +101,7 @@ export default function Inicio() {
             {greeting()}
             {me?.nombre ? <span className="text-primary">, {me.nombre}</span> : null}
           </h1>
-          <p className="mt-1 text-sm text-muted">Su espacio, en un vistazo.</p>
+          <FraseRotativa />
         </div>
       </div>
 
@@ -196,6 +197,29 @@ export default function Inicio() {
         </button>
       ) : null}
     </div>
+  )
+}
+
+function FraseRotativa() {
+  const [i, setI] = useState(() => Math.floor(Math.random() * FRASES_AMOR.length))
+  const [visible, setVisible] = useState(true)
+  useEffect(() => {
+    const id = setInterval(() => {
+      setVisible(false)
+      setTimeout(() => {
+        setI((p) => (p + 1) % FRASES_AMOR.length)
+        setVisible(true)
+      }, 300)
+    }, 5000)
+    return () => clearInterval(id)
+  }, [])
+  return (
+    <p
+      aria-live="polite"
+      className={`mt-1 min-h-[2.5rem] text-sm leading-snug text-muted transition-opacity duration-300 ease-gentle ${visible ? 'opacity-100' : 'opacity-0'}`}
+    >
+      {FRASES_AMOR[i]}
+    </p>
   )
 }
 
